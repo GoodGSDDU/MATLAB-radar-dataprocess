@@ -1,0 +1,11 @@
+# ===== 原始 ADC 数据（约 150 MB，超出 GitHub 单文件 100 MB 上限）=====
+adc_data.bin
+*.bin
+
+# ===== 处理过程中间结果 =====
+temp_result_batch_*.mat
+
+# ===== MATLAB 运行时产物 =====
+*.asv
+*.autosave
+slprj/
