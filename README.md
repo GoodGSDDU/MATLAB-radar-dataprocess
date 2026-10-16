@@ -36,23 +36,25 @@ verify_results        % 打印各项统计量，可与论文数值逐项对照
 读取 ADC
   └─ DCA1000_Read_Data.m        fseek 定位目标帧 -> I/Q 解交织 -> 立方体 (Samples, Chirps, 12)
       ↓
-距离维 FFT（汉明窗）
+距离维 FFT（汉明窗）                         process_single_frame
       ↓
 多普勒维 FFT（沿慢时间，汉明窗 + fftshift）
       ↓
-角度维 FFT（方位 / 俯仰，零填充至 180 点）
+角度维 FFT（方位取 4 个接收阵元 / 俯仰取 3 个发射阵元，零填充至 180 点）
       ↓
-三维 CFAR 检测 + 角度峰值校验        detect_points_3d_cfar
+距离-多普勒二维 CFAR + 角度谱峰值校验         detect_points_3d_cfar
       ↓
-极坐标 -> 直角坐标                   convert_to_3d_coordinates_3d
+极坐标 -> 直角坐标 + 帧内有效性筛选           convert_to_3d_coordinates_3d
       ↓
-静态点筛选（速度门限）                filter_static_points
+静态点筛选（速度门限）                       filter_static_points
       ↓
-与累积地图作 G-ICP 配准               gicp_register
+与累积地图作 G-ICP 配准                      gicp_register
       └─ point_covariances / estimate_rigid_transform / apply_transform
       ↓
-并入地图，进入下一帧
+并入地图，进入下一帧（首帧直接初始化为地图）
 ```
+
+> 检测在**距离-多普勒二维图**上做，门限为参考窗均值加偏置 $T=\mu+K\sigma$（参考窗 13×13、含 4×4 保护单元共 153 个参考单元，$K=0.8$），再用角度谱峰值比（$>1.2$）校验；这与解析式 CA-CFAR 的 $\alpha$ 门限不同。函数名中的 `3d` 指其输出用于三维点云，检测本身是二维的。
 
 ## 雷达参数
 
